@@ -1,0 +1,73 @@
+
+// EXAMPLE: give Skalds an extra chance to save against fear/panic effects
+
+
+INCLUDE ~%MOD_FOLDER%/lib/effect_evasion.tpa~
+
+// find all spells and items with opcode 24 = fear
+
+COPY_EXISTING_REGEXP GLOB ~^.+\.spl$~ ~override~
+  GET_OFFSET_ARRAY ab_array SPL_V10_HEADERS
+  PHP_EACH ab_array AS int => ab_off BEGIN
+	GET_OFFSET_ARRAY2 fx_array ab_off SPL_V10_HEAD_EFFECTS
+	PHP_EACH fx_array AS int => fx_off BEGIN
+	  READ_SHORT fx_off fx_type
+	  PATCH_IF (fx_type = 24) BEGIN
+	    SPRINT $fear_evade_res(~%SOURCE_RES%~)~SPL~
+	  END
+	END
+  END
+BUT_ONLY
+COPY_EXISTING_REGEXP GLOB ~^.+\.itm$~ ~override~
+  GET_OFFSET_ARRAY ab_array ITM_V10_HEADERS
+  PHP_EACH ab_array AS int => ab_off BEGIN
+	GET_OFFSET_ARRAY2 fx_array ab_off ITM_V10_HEAD_EFFECTS
+	PHP_EACH fx_array AS int => fx_off BEGIN
+	  READ_SHORT fx_off fx_type
+	  PATCH_IF (fx_type = 24) BEGIN
+	    SPRINT $fear_evade_res(~%SOURCE_RES%~)~ITM~
+	  END
+	END
+  END
+BUT_ONLY
+
+// now run the function on each spell and item we identified above
+
+ACTION_PHP_EACH fear_evade_res AS res => type BEGIN
+  ACTION_IF (~%type%~ STRING_EQUAL_CASE ~spl~) BEGIN 
+    ACTION_IF FILE_EXISTS_IN_GAME ~%res%.spl~ BEGIN
+      LAF add_evade_spell INT_VAR evasion_kit = 0x400f evasion_save = 1 STR_VAR evade_ext = ~spl~ evade_condition = ~kit~ evade_res = EVAL ~%res%~ evade_prefix = ~D5FE~ END
+    END
+  END
+  ACTION_IF (~%type%~ STRING_EQUAL_CASE ~itm~) BEGIN 
+    ACTION_IF FILE_EXISTS_IN_GAME ~%res%.itm~ BEGIN
+      LAF add_evade_spell INT_VAR evasion_kit = 0x400f evasion_save = 1 STR_VAR evade_ext = ~itm~ evade_condition = ~kit~ evade_res = EVAL ~%res%~ evade_prefix = ~D5FE~ END
+	END
+  END
+END
+
+/*
+SAVES:
+0 = none (can use with % chance to evade)
+1 = spells
+2 = breath
+4 = death
+8 = rod/wand
+16 = petrify
+*/
+
+
+
+/*
+
+HOW THIS WORKS:
+
+This functions recreates the IWD "Evasion" ability that lets thieves make an extra chance at a saving throw to avoid the effects of certain spells.
+However, this is a generalized version that can arbitrarily define sets of spells subject to an individualized version of IWD Evasion.
+ - The evade_prefix variable should be 4 characters, and should probably include your modder prefix.
+ - The evasion_condition variable here is set to 'kit' so we use the evasion_kit variable to identify the Skald kit.
+ - The evasion_condition variable can also be 'class' or can be 'spellstate' - in the latter case, you can give evasion to individuals by applying a spellstate, based on any condition you can imagine.
+ - Examples of this in the wild, in addition to basic IWD Evasion, are a 'Slippery Mind' feat to evade Charm and Confusion effects, and a 'Fortitude' feat to evade poison and disease effects.
+ - You can specify which saving throw is used in any given instance of effect evasion, or set the evasion_save variable to 0 and set an evasion_chance variable to a static % chance, instead.
+ 
+*/

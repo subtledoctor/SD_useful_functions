@@ -1,0 +1,107 @@
+
+// EXAMPLE: give Skalds a point pool, 1 point per 5 levels, to innately cast Armor of Faith, Remove Fear, or DUHM
+
+
+INCLUDE ~%MOD_FOLDER%/lib/semi_innate.tpa~
+
+// create an array with several spells/abilities
+
+ACTION_DEFINE_ASSOCIATIVE_ARRAY semi_innate_skald BEGIN
+  d5sk01 => sppr111
+  d5sk02 => sppr108
+  d5sk03 => sppr214
+END
+
+// set up a 'spell table' for ability pool points (do not exceed 15 points)
+
+<<<<<<<< inline/d5sklpts.2da
+2DA V1.0
+0
+        1 
+1       1 
+2       1 
+3       1 
+4       1 
+5       2 
+6       2 
+7       2 
+8       2 
+9       2 
+10      3 
+11      3 
+12      3 
+13      3 
+14      3 
+15      4 
+16      4 
+17      4 
+18      4 
+19      4 
+20      5 
+21      5 
+22      5 
+23      5 
+24      5 
+25      6 
+26      6 
+27      6 
+28      6 
+29      6 
+30      7 
+31      7 
+32      7 
+33      7 
+34      7 
+35      8 
+36      8 
+37      8 
+38      8 
+39      8 
+40      9 
+ >>>>>>>> 
+COPY ~inline/d5sklpts.2da~ ~override/d5sklpts.2da~
+
+// run the function
+
+LAF semi_innate_casting INT_VAR semi_innate_stat = 109 semi_innate_shift = 20 STR_VAR semi_innate_prefix = ~d5sk~ semi_innate_array = ~semi_innate_skald~ points_table = ~d5sklpts~ table_spl = ~d5kiskl~ END
+
+// apply the ability pool function
+
+APPEND ~CLABBA04.2da~ 
+~SKLDPOOL    AP_D5SK000  ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        **** ~
+
+// learn the abilities in the pool
+
+APPEND ~CLABBA04.2da~ 
+~SKLDPOOL    AP_D5SK01L  ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        **** 
+SKLDPOOL    ****        AP_D5SK02L  ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        **** 
+SKLDPOOL    ****        ****        AP_D5SK03L  ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        **** ~
+
+/*
+an alternative: just learn all the abilities at the same time the ability pool is initialized:
+COPY_EXISTING ~d5sk000.spl~ ~override~
+  LPF ADD_SPELL_EFFECT INT_VAR opcode = 146 target = 1 parameter2 = 1 timing = 1 STR_VAR resource = ~D5SK01L~ END
+  LPF ADD_SPELL_EFFECT INT_VAR opcode = 146 target = 1 parameter2 = 1 timing = 1 STR_VAR resource = ~D5SK02L~ END
+  LPF ADD_SPELL_EFFECT INT_VAR opcode = 146 target = 1 parameter2 = 1 timing = 1 STR_VAR resource = ~D5SK03L~ END
+IF_EXISTS BUT_ONLY
+*/
+
+
+
+/*
+
+HOW THIS WORKS:
+
+This function creates a pool of spells in the Innate Abilities bar which work from a shared point pool.
+ - First, you set up a pool of abilities in an array. In this case I used three preexisting spells; Any arcane, divine, or innate spell will work. (But casting arcane spells this way will alert the Cowled Wizards in BG2.)
+ - The ability names in the left side of the array should be 6 characters max, since the function will create copies with letters appended to them which must be 7 characters max.
+ - The function maxes out at 15 points; and you should limit the pool to 6 or 7 spells, since they will all take up space under the Innate Abilities button in the game UI.
+ - Feed that array to the 'semi_innate_casting' function. The semi_innate_prefix variable should be 4 characters long, and should probably include your modder prefix.
+ - Pool points are recorded in a weapon proficiency, and must be shifted at least 8 bits from the base proficiency values so as not to interfere with actual weapon proficiencies... 
+ - ...This example uses the 21st through 24th bits of stat 109, so the semi_innate_stat variable is 109 and the semi_innate_shift variable is 20. Point values will be (1<<20) through (15<<20) of stat 109.
+ - The the point total is defined by a .2da table - basically a simplified spell table, with only one 'spell level.' This should be copied into /override before running the semi_innate function. (I inlined the table here for demonstration purposes.)
+ - The semi_innate_prefix variable with a '000' suffix is the name of the spell that initializes the ability pool. It should be applied whenever the character gets access to the ability pool.
+ - The ability names in your array with an 'L' suffix are the spells that let you 'learn' each ability in the pool. In this example they are applied in the kit table at 1st, 2nd, and 3rd level.
+ - ...but these can also be granted at other times, learned from items or in-game circumstances, etc. If they are all meant to be learned at once you can just add op146 effects to the '000' initialization spell (see alternative example above).
+  
+*/

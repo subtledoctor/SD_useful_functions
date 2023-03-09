@@ -1,0 +1,45 @@
+BACKUP ~d5_useful_functions/backup~
+AUTHOR ~SubtleD~
+
+
+//____________________________________________________________________________________
+
+
+BEGIN ~allow Skalds to cast spells in armor~
+
+INCLUDE ~%MOD_FOLDER%/examples/armored_casting_example.tpa~
+
+
+//____________________________________________________________________________________
+
+
+BEGIN ~add some fighter HLAs to Skalds~
+
+INCLUDE ~%MOD_FOLDER%/examples/hla_actions_example.tpa~
+
+
+//____________________________________________________________________________________
+
+
+BEGIN ~give Skalds extra weapon proficiencies at levels 1 and 5~
+
+INCLUDE ~%MOD_FOLDER%/examples/dial_prof_example.tpa~
+
+
+//____________________________________________________________________________________
+
+
+BEGIN ~give Skalds an extra chance to save against Fear effects~
+
+INCLUDE ~%MOD_FOLDER%/examples/effect_evasion_example.tpa~
+
+
+//____________________________________________________________________________________
+
+
+BEGIN ~give Skalds a pool of innate abilities~
+
+INCLUDE ~%MOD_FOLDER%/examples/semi_innate_example.tpa~
+
+
+//____________________________________________________________________________________

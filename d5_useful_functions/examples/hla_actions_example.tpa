@@ -1,0 +1,26 @@
+
+// EXAMPLE: give Skalds the War Cry HLA; and give them Deathblow instead of Spike Trap
+
+
+INCLUDE ~%MOD_FOLDER%/lib/hla_actions.tpa~
+
+LAF action_add_hla STR_VAR kit_name = ~SKALD~ ability = ~GA_SPCL908~ num_allowed = ~3~ END	//	war cry
+LAF action_replace_hla STR_VAR kit_name = ~SKALD~ remove_ability = ~GA_SPCL910~ ability = ~GA_SPCL902~ END	//	remove spike trap, add deathblow
+
+
+// That's it: 3 lines of code.
+
+/*
+
+HOW THIS WORKS:
+
+These functions alter HLA tables without overwriting anything. Any number of mods can use this to add HLAs, replace existing ones with new ones, etc., and they will all work together constructively. 
+ - Behind the scenes, this copies the kit's existing HLA table to a new file, referenced according to its kitlist.2da index number, and then applies changes to this new file.
+ - This way, any other kits that share the same HLA table will not be affected if they are not supposed to be affected.
+ - The new HLA table is recorded in LUABBR.2da so that any future changes can find it easily.
+ - The variables for the action_add_hla function are named for the terms in the header row of an HLA table - 'ability,' 'num_allowed,' etc.
+ - The 'ability' variable should include the 'AP_' or 'GA_' prefix, as in the example above.
+ - The action_remove_hla function only has a single variable, 'remove_ability' which does what it sounds like. Be sure, again, to include the 'AP_' or 'GA_' prefix.
+ - The action_replace_hla function uses the 'remove_ability' variable plus all the variables in the 'action_add_hla' function.
+ 
+*/

@@ -1,0 +1,62 @@
+
+// EXAMPLE: let Skalds cast spells in leather and chain armors
+
+
+// One way to do it: apply a permanent effect in the Skald kit table. Just needs five lines of code:
+
+INCLUDE ~%MOD_FOLDER%/lib/d5_armored_casting.tpa~
+LAM D5_ARMORED_CASTING
+
+APPEND ~CLABBA04.2da~ 
+~ARMCAST     AP_D5ARCA1  ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        **** 
+ARMCAST     AP_D5ARCA2  ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        **** ~
+
+// That's it: 5 lines of code in the mod.
+
+/*
+
+// An alternative way: modify armors themselves, based on their appearance (0x400f is the Skald's kit.ids value)
+
+COPY_EXISTING_REGEXP GLOB ~^.+\.itm$~ ~override~
+	PATCH_IF (SOURCE_SIZE > 0x71) BEGIN
+	  READ_SHORT 0x1c type
+	  READ_LONG 0x22 appearance
+	  PATCH_IF (type = 2) BEGIN 	// armor
+		PATCH_IF (appearance = 16690) BEGIN // leather appearance
+		  LPF ADD_ITEM_EQEFFECT INT_VAR insert_point = 0 opcode = 177 parameter1 = 0x400f parameter2 = 9 timing = 2 STR_VAR resource = ~d5arca1~ END
+		END
+		PATCH_IF (appearance = 16691) BEGIN // chain appearance
+		  LPF ADD_ITEM_EQEFFECT INT_VAR insert_point = 0 opcode = 177 parameter1 = 0x400f parameter2 = 9 timing = 2 STR_VAR resource = ~d5arca2~ END
+		END
+	  END
+	END
+BUT_ONLY
+// just FYI, the plate mail appearance value is 16692 
+
+...
+
+// Another alternative: only apply this to Voghiln in Siege of Dragonspear
+
+COPY_EXISTING ~voghil7.cre~ ~override~
+  LPF ADD_CRE_EFFECT INT_VAR opcode = 146 target = 1 parameter1 = 0 parameter2 = 1 timing = 1 STR_VAR resource = ~d5arca1~ END
+  LPF ADD_CRE_EFFECT INT_VAR opcode = 146 target = 1 parameter1 = 0 parameter2 = 1 timing = 1 STR_VAR resource = ~d5arca2~ END
+IF_EXISTS
+
+*/
+
+
+/*
+
+HOW THIS WORKS:
+
+This macro enables arcane spellcasting in armor, by classes, kits, or individuals. It works like this:
+ - It moves the "disable arcane casting" (opcode 145) effects in armor .ITM files out into external .EFF files. There are three variants, which are identical except for their names. One of the three is used in leather armors, one of them is used in chain armors, and one is used in plate armors. They are "d5arcaL," "d5arcaC," and "d5arcaP."
+ - Then, it creates three spells, each of which blocks one of the above effects. "d5arca1" blocks "d5arcaL," and thus allows casting spells in leather armor. "d5arca2" blocks "d5arcaC," and thus allows casting in chain armor. "d5arca3" blocks "d5arcaP," and thus allows casting in plate armor.
+ - It also creates three .EFF files that are functionally identical to those three spells.
+ - The spells have permanent timing, so they can be applied as a kit ability, or patched onto a .CRE file, or whatever. Beings affected by "d5arca1.spl" for example, will be able to cast arcane spells in any leather armor. (See the first example above.)
+ - The ...1/...2/...3 .EFF files have "while equipped" timing, so they can be inserted into armor .ITM files before the ...L/...C/...P 177 effects, in order to exempt categories of people from the restriction. (See the second example above.)
+
+You can use opcode 318/324 effects protecting against "d5arcaL/C/P," for even more fine-tuned filtering. The sky is the limit.
+
+Why use this macro instead of each mod rolling their own version? Because to achieve this, all armors need to be modified. If every mod does it differently, then they will all be incompatible with each other. But if every mod uses this function, they will all work together harmoniously. One mod can let all bards cast in leather armor, another mod can let Skalds specifically cast in chain mail, and a third mod can let Xan cast in plate armor.
+*/
