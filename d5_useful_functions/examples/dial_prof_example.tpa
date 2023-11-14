@@ -4,36 +4,43 @@
 
 INCLUDE ~%MOD_FOLDER%/lib/dialprof.tpa~
 
-OUTER_SPRINT prof_script_name ~d5skpr~	//	max 6 characters!
-OUTER_SPRINT class_dlgs ~ba~
-OUTER_SET script_level_one = 0
-OUTER_SET script_higher_levels = 0
+LAF PROF_DIALOGUE INT_VAR script_level_one = 0 script_higher_levels = 0 ignore_max = 0 STR_VAR prof_script_name = ~d5skpr~ class_dlgs = ~ba~ END
 
-LAM PROF_DIALOGUE
+COPY_EXISTING ~d5skpr.spl~ ~override/d5skpra.spl~
+	LPF ALTER_EFFECT INT_VAR silent = 1 match_opcode = 172 STR_VAR match_resource = ~d5skpr~ resource = ~d5skpra~ END
+IF_EXISTS
+COPY_EXISTING ~d5skpr.spl~ ~override/d5skpr1.spl~
+    WRITE_SHORT 0x1c 4
+    WRITE_LONG 0x34 1
+    LPF DELETE_EFFECT END
+    LPF ADD_SPELL_EFFECT INT_VAR target = 1 opcode = 171 timing = 1 STR_VAR resource = EVAL ~d5skpra~ END
+    LPF ADD_SPELL_EFFECT INT_VAR target = 1 opcode = 206 timing = 9 STR_VAR resource = EVAL ~d5skpr1~ END
 
-COPY_EXISTING ~d5skpra.spl~ ~override/d5skprb.spl~
-  LPF ALTER_EFFECT INT_VAR silent = 1 match_opcode = 172 STR_VAR match_resource = ~d5skpra~ resource = ~d5skprb~ END
+COPY_EXISTING ~d5skpr.spl~ ~override/d5skprb.spl~
+	LPF ALTER_EFFECT INT_VAR silent = 1 match_opcode = 172 STR_VAR match_resource = ~d5skpra~ resource = ~d5skprb~ END
 IF_EXISTS
 COPY_EXISTING ~d5skpr1.spl~ ~override/d5skpr2.spl~
-  LPF ALTER_EFFECT INT_VAR silent = 1 match_opcode = 171 STR_VAR match_resource = ~d5skpra~ resource = ~d5skprb~ END
+	LPF ALTER_EFFECT INT_VAR silent = 1 match_opcode = 171 STR_VAR match_resource = ~d5skpra~ resource = ~d5skprb~ END
+	LPF ALTER_EFFECT INT_VAR silent = 1 match_opcode = 206 STR_VAR match_resource = ~d5skpr1~ resource = ~d5skpr2~ END
 IF_EXISTS
 
 APPEND ~CLABBA04.2da~ 
 ~XTRAPROF    AP_D5SKPR1  ****        ****        ****        AP_D5SKPR2  ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        **** ~
 
-// That's it: 13 lines of code in the mod.
+// That's it: 19 lines of code in the mod itself.
 
 /*
 
 HOW THIS WORKS:
 
-This macro creates a spell that initiates a dialogue which lets the caster advance any proficiency open to their class/kit, a number of times determined by the macro variables.
+This function creates a spell that initiates a dialogue which lets the caster advance any proficiency open to their class/kit, a number of times determined by the macro variables.
  - Unlike the other macros, this one also requires a folder to be in /%MOD_FOLDER%/lib/, since the macro uses a .CRE file, a .BAM file, and some portable .TRA strings
- - The %prof_script_name% should be six characters or less. The macro will create a spell with an 'A' at the end. Casting this spell triggers the dialogue.
- - It also creates a spell with '1' at the end, which uses opcode 171 to grant you the 'A' spell. Both of these can be copied after running the macro to create more instances that can be used. (See the example above.)
- - The %script_level_one% variable can be OUTER_SET to 1 to include all 1st-level proficiency points for the caster's kit. 
- - The %script_higher_levels% variable can be OUTER_SET to 1 to include all proficiency points *after* level 1.
+ - The %prof_script_name% should be seven characters or less. The function will create a spell with this name. Casting this spell triggers the dialogue.
+ - In this example I copied the spell produced by the macro into two variants, with 'A' and 'B' suffixes, so that you can get two copies of the ability and use them separately. I also created spells with '1' and '2' suffixes which do nothing but give you those 'A' and 'B' spells, with a 206 effect preventing duplication, so that they can be applied in a kit's CLAB table and it will only occur once.
+ - The %script_level_one% variable can be set to 1 to include all 1st-level proficiency points for the caster's kit. 
+ - The %script_higher_levels% variable can be set to 1 to include all proficiency points *after* level 1.
  - So if both of those variables are set to 1, then the spell will basically double the number of proficiencies they already have at the time of casting.
  - If both of those variables are set to 0, then the dialogue will just fire once - the spell will essentially grant one extra proficiency point.
-  
+ - The %ignore_max% variable can be set to 1 to allow this instance of the dialogue to ignore the class/kit's usual maximum proficiency limits. (So it can let an Archer get specialization in a melee weapon, for example.) 
+ - The %class_dlgs% variable can be omitted or set to ~all~ in which case the spell will work for all classes; or it can be used to limit the dialogue to a set of defined classes.  
 */

@@ -63,14 +63,14 @@ COPY ~inline/d5sklpts.2da~ ~override/d5sklpts.2da~
 
 // run the function
 
-LAF semi_innate_casting INT_VAR semi_innate_stat = 109 semi_innate_shift = 20 STR_VAR semi_innate_prefix = ~d5sk~ semi_innate_array = ~semi_innate_skald~ points_table = ~d5sklpts~ table_spl = ~d5kiskl~ END
+LAF semi_innate_casting INT_VAR semi_innate_stat = 110 semi_innate_shift = 16 STR_VAR semi_innate_prefix = ~d5sk~ semi_innate_array = ~semi_innate_skald~ points_table = ~d5sklpts~ table_spl = ~d5kiskl~ END
 
-// apply the ability pool function
+// apply the ability pool function to the kit
 
 APPEND ~CLABBA04.2da~ 
 ~SKLDPOOL    AP_D5SK000  ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        **** ~
 
-// learn the abilities in the pool
+// option 1: use the kit table to add abilities to the pool at different times
 
 APPEND ~CLABBA04.2da~ 
 ~SKLDPOOL    AP_D5SK01L  ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        **** 
@@ -78,7 +78,8 @@ SKLDPOOL    ****        AP_D5SK02L  ****        ****        ****        ****    
 SKLDPOOL    ****        ****        AP_D5SK03L  ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        **** ~
 
 /*
-an alternative: just learn all the abilities at the same time the ability pool is initialized:
+// option 2: just learn all the abilities at the same time the ability pool is initialized:
+
 COPY_EXISTING ~d5sk000.spl~ ~override~
   LPF ADD_SPELL_EFFECT INT_VAR opcode = 146 target = 1 parameter2 = 1 timing = 1 STR_VAR resource = ~D5SK01L~ END
   LPF ADD_SPELL_EFFECT INT_VAR opcode = 146 target = 1 parameter2 = 1 timing = 1 STR_VAR resource = ~D5SK02L~ END
