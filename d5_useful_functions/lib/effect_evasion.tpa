@@ -6,8 +6,7 @@
 //__________________________________________________________________________________
 //__________________________________________________________________________________
 
-// Version: 3.6 - check_globals
-
+// Version: 3.7 - better item handling
 
 /*
 SAVES:
@@ -114,24 +113,31 @@ DEFINE_ACTION_FUNCTION add_evade_spell
 		LPF DELETE_EFFECT INT_VAR check_globals = 0 match_opcode = 177 STR_VAR match_resource = EVAL ~%evade_prefix%A%evasion_ind%~ END
 		LPF DELETE_EFFECT INT_VAR check_globals = 0 match_opcode = 318 STR_VAR match_resource = EVAL ~%evade_prefix%B%evasion_ind%~ END
 		LPF DELETE_EFFECT INT_VAR check_globals = 0 match_opcode = 318 STR_VAR match_resource = EVAL ~%evade_prefix%A%evasion_ind%~ END
-		PATCH_IF (~%evade_ext%~ STRING_EQUAL_CASE ~spl~) BEGIN
+	  ACTION_IF (~%evade_ext%~ STRING_EQUAL_CASE ~spl~) BEGIN
+	    COPY_EXISTING ~%evade_res%.%evade_ext%~ ~override~
 		  LPF ADD_SPELL_EFFECT INT_VAR insert_point = 0 opcode = 177 target = 2 parameter1 = 0 parameter2 = 2 timing = 0 duration = 1 STR_VAR resource = EVAL ~%evade_prefix%B%evasion_ind%~ END
 		  LPF ADD_SPELL_EFFECT INT_VAR insert_point = 0 opcode = 177 target = 2 parameter1 = 0 parameter2 = 2 timing = 0 duration = 1 STR_VAR resource = EVAL ~%evade_prefix%A%evasion_ind%~ END
 		  LPF ADD_SPELL_EFFECT INT_VAR insert_point = 0 opcode = 318 target = 2 duration = 1 timing = 0 parameter1 = %evade_cond% parameter2 = %not_evade% STR_VAR resource = EVAL ~%evade_prefix%A%evasion_ind%~ END
 		  LPF ADD_SPELL_EFFECT INT_VAR insert_point = 0 opcode = 318 target = 2 duration = 1 timing = 0 parameter1 = %evade_cond% parameter2 = %not_evade% STR_VAR resource = EVAL ~%evade_prefix%B%evasion_ind%~ END
-		END
-		PATCH_IF (~%evade_ext%~ STRING_EQUAL_CASE ~itm~) BEGIN
-		  LPF ADD_ITEM_EFFECT INT_VAR insert_point = 0 opcode = 177 target = 2 parameter1 = 0 parameter2 = 2 timing = 0 duration = 1 STR_VAR resource = EVAL ~%evade_prefix%B%evasion_ind%~ END
-		  LPF ADD_ITEM_EFFECT INT_VAR insert_point = 0 opcode = 177 target = 2 parameter1 = 0 parameter2 = 2 timing = 0 duration = 1 STR_VAR resource = EVAL ~%evade_prefix%A%evasion_ind%~ END
-		  LPF ADD_ITEM_EFFECT INT_VAR insert_point = 0 opcode = 318 target = 2 duration = 1 timing = 0 parameter1 = %evade_cond% parameter2 = %not_evade% STR_VAR resource = EVAL ~%evade_prefix%A%evasion_ind%~ END
-		  LPF ADD_ITEM_EFFECT INT_VAR insert_point = 0 opcode = 318 target = 2 duration = 1 timing = 0 parameter1 = %evade_cond% parameter2 = %not_evade% STR_VAR resource = EVAL ~%evade_prefix%B%evasion_ind%~ END
-		END
+		  PATCH_IF %evade_cond% = 252 BEGIN	
+		    LPF DELETE_EFFECT INT_VAR check_globals = 0 match_opcode = 318 match_parameter2 = 136 END
+		    LPF ADD_SPELL_EFFECT INT_VAR insert_point = 0 opcode = 318 target = 2 duration = 1 timing = 0 parameter1 = 0x8015602f parameter2 = %state_row% STR_VAR resource = EVAL ~%evade_prefix%A%evasion_ind%~ END
+		    LPF ADD_SPELL_EFFECT INT_VAR insert_point = 0 opcode = 318 target = 2 duration = 1 timing = 0 parameter1 = 0x8015602f parameter2 = %state_row% STR_VAR resource = EVAL ~%evade_prefix%B%evasion_ind%~ END
+		  END
+	  END
+	  ACTION_IF (~%evade_ext%~ STRING_EQUAL_CASE ~itm~) BEGIN
+	    COPY_EXISTING ~%evade_res%.%evade_ext%~ ~override~
+		  LPF ADD_ITEM_EFFECT INT_VAR type = 99 insert_point = 0 opcode = 177 target = 2 parameter1 = 0 parameter2 = 2 timing = 0 duration = 1 STR_VAR resource = EVAL ~%evade_prefix%B%evasion_ind%~ END
+		  LPF ADD_ITEM_EFFECT INT_VAR type = 99 insert_point = 0 opcode = 177 target = 2 parameter1 = 0 parameter2 = 2 timing = 0 duration = 1 STR_VAR resource = EVAL ~%evade_prefix%A%evasion_ind%~ END
+		  LPF ADD_ITEM_EFFECT INT_VAR type = 99 insert_point = 0 opcode = 318 target = 2 duration = 1 timing = 0 parameter1 = %evade_cond% parameter2 = %not_evade% STR_VAR resource = EVAL ~%evade_prefix%A%evasion_ind%~ END
+		  LPF ADD_ITEM_EFFECT INT_VAR type = 99 insert_point = 0 opcode = 318 target = 2 duration = 1 timing = 0 parameter1 = %evade_cond% parameter2 = %not_evade% STR_VAR resource = EVAL ~%evade_prefix%B%evasion_ind%~ END
+		  PATCH_IF %evade_cond% = 252 BEGIN	
+		    LPF DELETE_EFFECT INT_VAR check_globals = 0 match_opcode = 318 match_parameter2 = 136 END
+		    LPF ADD_ITEM_EFFECT INT_VAR type = 99 insert_point = 0 opcode = 318 target = 2 duration = 1 timing = 0 parameter1 = 0x8015602f parameter2 = %state_row% STR_VAR resource = EVAL ~%evade_prefix%A%evasion_ind%~ END
+		    LPF ADD_ITEM_EFFECT INT_VAR type = 99 insert_point = 0 opcode = 318 target = 2 duration = 1 timing = 0 parameter1 = 0x8015602f parameter2 = %state_row% STR_VAR resource = EVAL ~%evade_prefix%B%evasion_ind%~ END
+		  END
+	  END
 // 	if traditional evasion, do not evade when helpless
-		PATCH_IF %evade_cond% = 252 BEGIN	
-		  LPF DELETE_EFFECT INT_VAR check_globals = 0 match_opcode = 318 match_parameter2 = 136 END
-		  LPF ADD_SPELL_EFFECT INT_VAR insert_point = 0 opcode = 318 target = 2 duration = 1 timing = 0 parameter1 = 0x8015602f parameter2 = %state_row% STR_VAR resource = EVAL ~%evade_prefix%A%evasion_ind%~ END
-		  LPF ADD_SPELL_EFFECT INT_VAR insert_point = 0 opcode = 318 target = 2 duration = 1 timing = 0 parameter1 = 0x8015602f parameter2 = %state_row% STR_VAR resource = EVAL ~%evade_prefix%B%evasion_ind%~ END
-		END
 	  CREATE EFF ~%evade_prefix%A%evasion_ind%~
 		WRITE_LONG 0x10 318
 		WRITE_LONG 0x14 2
@@ -362,117 +368,4 @@ ACTION_IF (optional_evade = 1) BEGIN
     END
   END
 END
-//__________________________________________________________________________________
-
-
-//__________________________________________________________________________________
-//__________________________________________________________________________________
-
-
-//ADD SPELLSTATE FUNCTION___________________________________________________________
-//
-DEFINE_ACTION_FUNCTION d5_resolve_state STR_VAR new_state_id = ~blah~ RET new_state_ind BEGIN
-  OUTER_SET state_ind = IDS_OF_SYMBOL (~splstate~ ~%new_state_id%~)
-  ACTION_IF !(state_ind = 0 - 1) BEGIN
-    OUTER_SET new_state_ind = state_ind
-  END
-  ACTION_IF (state_ind = 0 - 1) BEGIN
-    OUTER_SET new_state_ind = 0
-    COPY_EXISTING ~splstate.ids~ ~override~
-      READ_2DA_ENTRIES_NOW rows 2
-      PATCH_IF (rows < 256) BEGIN
-        SET found = 0
-        FOR (row = 1; row < rows; ++row) BEGIN
-          PATCH_IF (found = 0) BEGIN
-            READ_2DA_ENTRY_FORMER rows row 0 ind
-            READ_2DA_ENTRY_FORMER rows row 1 state
-            SET poss_ind = (ind + 1)
-            PATCH_IF (poss_ind < 256) BEGIN
-              LOOKUP_IDS_SYMBOL_OF_INT poss_state ~splstate~ poss_ind
-              PATCH_IF (~%poss_state%~ STRING_EQUAL_CASE ~%poss_ind%~) BEGIN
-                SET found = 1
-                SET new_state_ind = poss_ind
-              END
-            END
-          END
-        END
-      END
-    BUT_ONLY
-    ACTION_IF (new_state_ind > 0) BEGIN
-      APPEND ~splstate.ids~ ~%new_state_ind%  %new_state_id%~
-    END
-  END
-END 
-
-
-//__________________________________________________________________________________
-//__________________________________________________________________________________
-
-
-DEFINE_PATCH_FUNCTION QD_ADD_EMPTY_SPELL_HEADER
-INT_VAR
-  type            = 1
-  location        = 4
-  target          = 1
-  target_count    = 0
-  range           = 0
-  required_level  = 1
-  speed           = 0
-  projectile      = 1
-  copy_header     = 0
-  insert_point    = ~-1~
-STR_VAR
-  icon            = ~~
-RET
-  insert_point
-BEGIN
-  SET hs = 0x28
-  READ_LONG 0x64 ho
-  READ_SHORT 0x68 hc
-  READ_LONG 0x6a eo
-  SET insert_point = (insert_point > hc || insert_point < 0) ? hc : insert_point
-  SET copy_header = (copy_header < 0) ? 0 : copy_header
-  PATCH_IF (copy_header > hc) BEGIN
-    PATCH_WARN ~WARNING: Unable to copy %copy_header%th header, %SOURCE_FILE% contains only %hc% headers!~
-  END ELSE BEGIN
-    INSERT_BYTES (ho + insert_point * hs) hs
-    SET hc += 1
-    SET eo += hs
-    PATCH_IF (copy_header) BEGIN
-      READ_SHORT (ho + (copy_header - 1) * hs + 0x1e) ec
-      READ_SHORT (ho + (copy_header - 1) * hs + 0x20) ei
-      READ_ASCII (eo + ei * 0x30) effs (ec * 0x30)
-      READ_ASCII (ho + (copy_header - 1) * hs) copy (hs)
-      WRITE_ASCIIE (ho + insert_point * hs) ~%copy%~ (hs)
-    END
-    WRITE_SHORT 0x68 hc
-    WRITE_LONG 0x6a eo
-    READ_SHORT 0x70 ei // technically, it is a counter
-    FOR (i = ho; i < ho + hc * hs; i += hs) BEGIN
-      READ_SHORT (i + 0x1e) ec
-      WRITE_SHORT (i + 0x20) ei
-      SET ei += ec
-    END
-    PATCH_IF (copy_header) BEGIN
-      READ_SHORT (ho + insert_point * hs + 0x1e) ec
-      READ_SHORT (ho + insert_point * hs + 0x20) ei
-      INSERT_BYTES (eo + ei * 0x30) (ec * 0x30)
-      WRITE_ASCIIE (eo + ei * 0x30) ~%effs%~ (ec * 0x30)
-    END ELSE BEGIN
-      SET off = ho + insert_point * hs
-      WRITE_BYTE off type
-      WRITE_BYTE (off + 0x2) location
-      WRITE_ASCIIE (off + 0x4) ~%icon%~ (8)
-      WRITE_BYTE (off + 0xc) target
-      WRITE_BYTE (off + 0xd) target_count
-      WRITE_SHORT (off + 0xe) range
-      WRITE_SHORT (off + 0x10) required_level
-      WRITE_LONG (off + 0x12) speed
-      WRITE_SHORT (off + 0x26) projectile
-    END
-  END
-END
-
-
-//__________________________________________________________________________________
 //__________________________________________________________________________________
